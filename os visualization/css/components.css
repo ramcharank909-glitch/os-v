@@ -1,0 +1,417 @@
+/* OS Process State Transition Visualizer - Components & Interactive Animations */
+
+/* SVG State Diagram Styles */
+.state-node-group {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.state-node-group:hover {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.1));
+}
+
+.state-node-bg {
+  transition: all 0.25s ease;
+  rx: 16px;
+  ry: 16px;
+}
+
+.state-node-title {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.state-node-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  fill: #64748b;
+  pointer-events: none;
+}
+
+.state-badge-circle {
+  fill: #ffffff;
+  stroke-width: 2px;
+  transition: all 0.3s ease;
+}
+
+.state-badge-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* State Process Pill Tokens inside Node */
+.node-tokens-group {
+  pointer-events: none;
+}
+
+.token-pill {
+  rx: 10px;
+  ry: 10px;
+  stroke: #ffffff;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+}
+
+.token-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Transition Path Arrows */
+.transition-path {
+  fill: none;
+  stroke: #94a3b8;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.transition-label-bg {
+  fill: #ffffff;
+  stroke: #e2e8f0;
+  stroke-width: 1px;
+  rx: 6px;
+  ry: 6px;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
+}
+
+.transition-label-text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  fill: #475569;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* Active Highlight Animation for Transitions */
+.transition-path.active {
+  stroke-dasharray: 8, 4;
+  animation: dash-flow 0.8s linear infinite;
+}
+
+.transition-path.active-admit {
+  stroke: #9333ea !important;
+  stroke-width: 4px;
+}
+
+.transition-path.active-dispatch {
+  stroke: #16a34a !important;
+  stroke-width: 4px;
+}
+
+.transition-path.active-preempt {
+  stroke: #2563eb !important;
+  stroke-width: 4px;
+}
+
+.transition-path.active-io-req {
+  stroke: #ea580c !important;
+  stroke-width: 4px;
+}
+
+.transition-path.active-io-done {
+  stroke: #3b82f6 !important;
+  stroke-width: 4px;
+}
+
+.transition-path.active-exit {
+  stroke: #ef4444 !important;
+  stroke-width: 4px;
+}
+
+@keyframes dash-flow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Animated Flow Particle that travels along the path */
+.flow-particle {
+  fill: #ffffff;
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.3));
+}
+
+/* Pulse Glow when State Node is active */
+.state-node-group.active .state-node-bg {
+  stroke-width: 3.5px;
+  animation: node-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes node-pulse {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 16px rgba(37, 99, 235, 0.45));
+  }
+}
+
+/* ========================================== */
+/* AIRPORT SCENE & AIRCRAFT SPRITE ANIMATIONS */
+/* ========================================== */
+.aircraft-sprite {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  user-select: none;
+}
+
+.aircraft-sprite:hover {
+  filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.75));
+}
+
+.aircraft-sprite.selected {
+  filter: drop-shadow(0 0 14px rgba(2, 132, 199, 0.95)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.8)) !important;
+}
+
+.aircraft-sprite.selected path {
+  stroke-width: 2.8px;
+}
+
+/* Radar Sweep Beam */
+.radar-sweep-beam {
+  transform-origin: 545px 35px;
+  animation: radar-rotation 4s linear infinite;
+}
+
+@keyframes radar-rotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* State Badge Colors */
+.badge-state-NEW { background: var(--state-new-bg); color: var(--state-new-text); border: 1px solid var(--state-new-border); }
+.badge-state-READY { background: var(--state-ready-bg); color: var(--state-ready-text); border: 1px solid var(--state-ready-border); }
+.badge-state-RUNNING { background: var(--state-running-bg); color: var(--state-running-text); border: 1px solid var(--state-running-border); }
+.badge-state-WAITING { background: var(--state-waiting-bg); color: var(--state-waiting-text); border: 1px solid var(--state-waiting-border); }
+.badge-state-TERMINATED { background: var(--state-terminated-bg); color: var(--state-terminated-text); border: 1px solid var(--state-terminated-border); }
+
+/* Process Card Detail Modal */
+.pcb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.pcb-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.pcb-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pcb-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+}
+
+.history-tick {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--primary);
+  width: 48px;
+}
+
+.history-arrow {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+/* Educational Accordion */
+.edu-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edu-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.edu-header {
+  padding: 14px 18px;
+  background: #f8fafc;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.edu-header:hover {
+  background: #f1f5f9;
+}
+
+.edu-body {
+  padding: 16px 18px;
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.6;
+  border-top: 1px solid var(--border-light);
+  display: none;
+}
+
+.edu-item.open .edu-body {
+  display: block;
+}
+
+.edu-item.open .edu-header {
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.edu-item.open .edu-icon {
+  transform: rotate(180deg);
+}
+
+.edu-icon {
+  transition: transform 0.2s ease;
+  font-size: 0.8rem;
+}
+
+/* Presentation Script Cards */
+.script-card {
+  border-left: 4px solid var(--primary);
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin-bottom: 14px;
+}
+
+.script-time {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.script-speech {
+  font-style: italic;
+  font-size: 0.92rem;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.script-actions {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* Tooltip */
+.tooltip-custom {
+  position: absolute;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  pointer-events: none;
+  z-index: 2000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  display: none;
+  max-width: 260px;
+  line-height: 1.35;
+}
+
+/* Toast Notification */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slide-in 0.25s ease;
+}
+
+.toast.toast-success {
+  background: #15803d;
+}
+
+.toast.toast-error {
+  background: #b91c1c;
+}
+
+.toast.toast-warning {
+  background: #c2410c;
+}
+
+.toast.toast-info {
+  background: #1e40af;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

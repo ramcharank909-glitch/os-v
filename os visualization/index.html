@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airport Traffic Control — OS Process State Transition Simulator</title>
+  
+  <!-- Modern Clean Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+          </svg>
+        </div>
+        <div class="header-title-wrap">
+          <h1>Airport Traffic Control — OS Process State Transition Simulator</h1>
+          <p>Interactive 5-State Process Lifecycle & CPU Scheduling Engine</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Simulation Clock -->
+        <div class="clock-chip">
+          <span class="clock-pulse"></span>
+          <span id="sim-clock">Tick: 0</span>
+        </div>
+
+        <!-- Preset Airport Demo Button -->
+        <button id="btn-airport-demo" class="btn btn-demo" title="Load sample flights (FL-101, FL-102, FL-103) for live demonstration">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
+          Load Airport Demo
+        </button>
+
+        <!-- Add Flight Button -->
+        <button id="btn-open-add-process" class="btn btn-secondary">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add Flight
+        </button>
+
+        <!-- Educational Guide -->
+        <button id="btn-open-edu" class="btn btn-secondary" title="View educational concepts, state definitions, and airport mapping">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          Educational Guide
+        </button>
+
+        <!-- Presentation Demo Script -->
+        <button id="btn-open-script" class="btn btn-secondary" title="Speaking notes for 2-3 minute presentation">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          Demo Script
+        </button>
+
+        <!-- Presentation Mode -->
+        <button id="btn-presentation-mode" class="btn btn-secondary" title="Maximize simulation and focus for classroom projection">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605"/></svg>
+          Presentation Mode
+        </button>
+      </div>
+    </header>
+
+    <!-- LIVE DASHBOARD STATISTICS: 8 REAL-TIME METRICS -->
+    <section class="dashboard-stats-grid">
+      <!-- 1. Total Flights -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Total Flights</span>
+          <span class="stat-pill-icon">✈️</span>
+        </div>
+        <div class="stat-pill-val" id="stat-total-flights">3</div>
+        <div class="stat-pill-sub">Created in simulation</div>
+      </div>
+
+      <!-- 2. Flights in NEW -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Arrival Bay [NEW]</span>
+          <span class="stat-pill-icon">🟣</span>
+        </div>
+        <div class="stat-pill-val" id="stat-flights-new" style="color: #9333ea;">0</div>
+        <div class="stat-pill-sub">Awaiting admission</div>
+      </div>
+
+      <!-- 3. Flights in READY (Runway Queue) -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Taxiway [READY]</span>
+          <span class="stat-pill-icon">🔵</span>
+        </div>
+        <div class="stat-pill-val" id="stat-flights-ready" style="color: #2563eb;">3</div>
+        <div class="stat-pill-sub">Queued for runway</div>
+      </div>
+
+      <!-- 4. Active RUNNING Flight (Runway) -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Runway 09L [RUNNING]</span>
+          <span class="stat-pill-icon">🟢</span>
+        </div>
+        <div class="stat-pill-val" id="stat-flights-running" style="color: #16a34a; font-size: 1.15rem;">None</div>
+        <div class="stat-pill-sub">Single CPU occupancy</div>
+      </div>
+
+      <!-- 5. Flights in WAITING (Holding Apron) -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Holding [WAITING]</span>
+          <span class="stat-pill-icon">🟠</span>
+        </div>
+        <div class="stat-pill-val" id="stat-flights-waiting" style="color: #ea580c;">0</div>
+        <div class="stat-pill-sub">Weather / Clearance hold</div>
+      </div>
+
+      <!-- 6. Completed Flights [TERMINATED] -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Departed [TERMINATED]</span>
+          <span class="stat-pill-icon">🔴</span>
+        </div>
+        <div class="stat-pill-val" id="stat-flights-terminated" style="color: #dc2626;">0</div>
+        <div class="stat-pill-sub">Completed operations</div>
+      </div>
+
+      <!-- 7. Current Tick -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Simulation Clock</span>
+          <span class="stat-pill-icon">⏱️</span>
+        </div>
+        <div class="stat-pill-val" id="stat-current-tick">T=0</div>
+        <div class="stat-pill-sub">Discrete time ticks</div>
+      </div>
+
+      <!-- 8. Successful State Transitions -->
+      <div class="stat-pill-card">
+        <div class="stat-pill-header">
+          <span class="stat-pill-label">Valid Transitions</span>
+          <span class="stat-pill-icon">🔄</span>
+        </div>
+        <div class="stat-pill-val" id="stat-transitions-count" style="color: #4f46e5;">3</div>
+        <div class="stat-pill-sub">Verified state shifts</div>
+      </div>
+    </section>
+
+    <!-- AIRPORT TRAFFIC CONTROL SIMULATION SCENE (FLAGSHIP VISUAL ATTRACTION) -->
+    <section class="airport-section">
+      <div class="airport-header">
+        <div class="airport-title-wrap">
+          <h2>
+            <svg width="22" height="22" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+            Airport Traffic Control Center — OS Process Lifecycle Simulator
+          </h2>
+          <p>Aircraft visually transition between airport operational zones mapped directly to the 5 Operating System Process States.</p>
+        </div>
+        <div style="font-size: 0.8rem; color: #1e40af; background: #eff6ff; padding: 4px 12px; border-radius: 6px; border: 1px solid #bfdbfe; font-weight: 600;">
+          Top-Down ATC Visual Scene
+        </div>
+      </div>
+
+      <!-- SVG Airport Scene -->
+      <div class="airport-container">
+        <svg id="airport-scene-svg"></svg>
+      </div>
+
+      <!-- Educational Analogy Banner Connecting Airport to OS -->
+      <div class="atc-metaphor-banner">
+        <span style="font-weight: 700; color: #1e3a8a;">Airport-to-OS State Mapping:</span>
+        <div class="metaphor-badge-list">
+          <span class="metaphor-badge" style="background: #f3e8ff; color: #7e22ce; border: 1px solid #c084fc;">Arrival Bay = NEW</span>
+          <span class="metaphor-badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd;">Taxiway Alpha = READY</span>
+          <span class="metaphor-badge" style="background: #f0fdf4; color: #15803d; border: 1px solid #86efac;">Active Runway 09L = RUNNING (CPU Core)</span>
+          <span class="metaphor-badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fdba74;">Holding Apron = WAITING (I/O Blocked)</span>
+          <span class="metaphor-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5;">Departure Gates = TERMINATED</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE MANUAL ATC DISPATCHER COMMAND BAR -->
+    <section class="atc-command-bar">
+      <div class="atc-selector-group">
+        <label for="select-manual-flight">
+          <span>🎮 ATC Manual Dispatcher:</span>
+        </label>
+        <select id="select-manual-flight">
+          <!-- Populated dynamically with flights -->
+        </select>
+      </div>
+
+      <div class="atc-btn-group">
+        <!-- 1. Dispatch to Runway [READY -> RUNNING] -->
+        <button id="btn-manual-dispatch" class="btn btn-primary" title="Assign active Runway 09L to selected flight (READY -> RUNNING)">
+          🛫 Dispatch to Runway
+        </button>
+
+        <!-- 2. Preempt Flight [RUNNING -> READY] -->
+        <button id="btn-manual-preempt" class="btn btn-warning" title="Preempt running flight and return to Taxiway Alpha (RUNNING -> READY)">
+          ⏱️ Preempt Flight
+        </button>
+
+        <!-- 3. Request Clearance / Wait [RUNNING -> WAITING] -->
+        <button id="btn-manual-wait" class="btn btn-secondary" title="Hold flight for weather/clearance (RUNNING -> WAITING)">
+          ⏳ Request Clearance / Hold
+        </button>
+
+        <!-- 4. Complete Waiting Event [WAITING -> READY] -->
+        <button id="btn-manual-complete-wait" class="btn btn-secondary" title="Weather cleared, return to Ready queue (WAITING -> READY)">
+          🟢 Clearance Complete
+        </button>
+
+        <!-- 5. Finish Flight [RUNNING -> TERMINATED] -->
+        <button id="btn-manual-finish" class="btn btn-danger" title="Complete takeoff and depart airspace (RUNNING -> TERMINATED)">
+          🏁 Finish Flight
+        </button>
+      </div>
+    </section>
+
+    <!-- SIMULATION CONTROL BAR -->
+    <section class="control-bar">
+      <!-- Playback Controls -->
+      <div class="control-group">
+        <button id="btn-play" class="btn btn-success">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>
+          Start
+        </button>
+        <button id="btn-step" class="btn btn-secondary" title="Advance simulation by exactly one tick">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0V4z"/></svg>
+          Step (1 Tick)
+        </button>
+        <button id="btn-reset" class="btn btn-secondary" title="Reset simulation to initial state">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          Reset
+        </button>
+      </div>
+
+      <!-- Simulation Parameters -->
+      <div class="control-group">
+        <!-- Simulation Speed -->
+        <div class="param-pill">
+          <label for="speed-slider">Speed:</label>
+          <div class="slider-wrap">
+            <input type="range" id="speed-slider" min="300" max="2500" step="100" value="1000">
+            <span id="speed-label" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; min-width: 45px;">1.0s/t</span>
+          </div>
+        </div>
+
+        <!-- Scheduling Algorithm -->
+        <div class="param-pill">
+          <label for="algo-select">Scheduler:</label>
+          <select id="algo-select">
+            <option value="RR" selected>Round Robin (RR)</option>
+            <option value="FCFS">First-Come First-Served (FCFS)</option>
+          </select>
+        </div>
+
+        <!-- Time Quantum (visible for RR) -->
+        <div class="param-pill" id="quantum-group">
+          <label for="quantum-input">Time Quantum:</label>
+          <input type="number" id="quantum-input" min="1" max="10" value="2" style="width: 52px; text-align: center;">
+          <span style="font-size: 0.75rem; color: #64748b;">ticks</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- "What Is Happening Now?" Educational Narrative Panel -->
+    <section class="narrative-banner" id="narrative-banner">
+      <div class="narrative-icon-wrap">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>
+      </div>
+      <div class="narrative-content">
+        <div class="narrative-header">
+          <div class="narrative-title">
+            <span id="narrative-title">Airport Traffic Control Narrative</span>
+          </div>
+          <span id="narrative-tag" class="narrative-tag">INIT</span>
+        </div>
+        <div class="narrative-text" id="narrative-text">
+          Simulation loaded with 3 flights. Press "Start" or "Step" to observe airport process state transitions.
+        </div>
+        <div class="narrative-subtext" id="narrative-subtext">
+          Taxiway Queue: [FL-101, FL-102, FL-103] | Active Runway: Idle
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS STATE DIAGRAM SECTION (SILBERSCHATZ OS MODEL) -->
+    <section class="diagram-section">
+      <div class="diagram-header">
+        <div class="diagram-title-wrap">
+          <h2>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" /></svg>
+            Operating System 5-State Transition Diagram
+          </h2>
+          <p>Valid state transitions illuminate dynamically as aircraft progress through their flight lifecycle.</p>
+        </div>
+        <div style="font-size: 0.8rem; color: #64748b; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+          Silberschatz OS Standard State Model
+        </div>
+      </div>
+
+      <!-- SVG Process Graph -->
+      <div class="diagram-container">
+        <svg id="state-diagram-svg"></svg>
+      </div>
+
+      <!-- State Color Legend -->
+      <div class="diagram-legend">
+        <div class="legend-item" onclick="app.showStateExplanation('NEW')">
+          <span class="legend-dot new"></span>
+          <span>New (Arrival Airspace)</span>
+        </div>
+        <div class="legend-item" onclick="app.showStateExplanation('READY')">
+          <span class="legend-dot ready"></span>
+          <span>Ready (Taxiway Alpha Queue)</span>
+        </div>
+        <div class="legend-item" onclick="app.showStateExplanation('RUNNING')">
+          <span class="legend-dot running"></span>
+          <span>Running (Active Runway 09L)</span>
+        </div>
+        <div class="legend-item" onclick="app.showStateExplanation('WAITING')">
+          <span class="legend-dot waiting"></span>
+          <span>Waiting / Blocked (Holding Apron)</span>
+        </div>
+        <div class="legend-item" onclick="app.showStateExplanation('TERMINATED')">
+          <span class="legend-dot terminated"></span>
+          <span>Terminated (Departure Gates)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- OPERATIONAL SYSTEM VIEW: 3 COLUMNS -->
+    <section class="operational-grid">
+      <!-- 1. Ready Queue (Taxiway Alpha) -->
+      <div class="ops-card">
+        <div class="ops-card-header">
+          <div class="ops-card-title">
+            <svg width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25" /></svg>
+            Taxiway Alpha Queue (FIFO)
+          </div>
+          <span id="ready-queue-count" class="badge-count badge-ready">0</span>
+        </div>
+        <div class="queue-list" id="ready-queue-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- 2. CPU Core Slot (Runway 09L) -->
+      <div class="ops-card">
+        <div class="ops-card-header">
+          <div class="ops-card-title">
+            <svg width="18" height="18" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+            Active Runway 09L (Single CPU)
+          </div>
+          <span class="badge-count badge-running">Single Occupancy</span>
+        </div>
+        <div class="cpu-socket-box" id="cpu-socket">
+          <div id="cpu-content" style="width: 100%;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. I/O Blocked Queue (Holding Apron) -->
+      <div class="ops-card">
+        <div class="ops-card-header">
+          <div class="ops-card-title">
+            <svg width="18" height="18" fill="none" stroke="#ea580c" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" /></svg>
+            Holding Apron & Weather Check
+          </div>
+          <span id="waiting-queue-count" class="badge-count badge-waiting">0</span>
+        </div>
+        <div class="queue-list" id="waiting-queue-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE FLIGHT / PROCESS TABLE & PERFORMANCE METRICS -->
+    <section class="data-grid">
+      <!-- Live Process Table -->
+      <div class="table-card">
+        <div class="ops-card-header">
+          <div class="ops-card-title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+            Flight Operations & State Tracking Table
+          </div>
+          <span style="font-size: 0.78rem; color: #64748b;">Click any row to select & inspect</span>
+        </div>
+        <div class="table-responsive">
+          <table class="process-table">
+            <thead>
+              <tr>
+                <th>Flight ID</th>
+                <th>Aircraft Type</th>
+                <th>Current State</th>
+                <th>Arrival</th>
+                <th>Runway Burst</th>
+                <th>Remaining</th>
+                <th>Hold Spec</th>
+                <th>Wait Time</th>
+                <th>Transitions</th>
+                <th>Progress</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="process-table-body">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Real-Time Metrics Column -->
+      <div class="metrics-column">
+        <!-- Runway / CPU Utilization -->
+        <div class="metric-card">
+          <div class="metric-info" style="width: 100%;">
+            <h4>Runway (CPU) Utilization</h4>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span class="metric-value" id="metric-cpu-util">0.0%</span>
+              <span class="metric-sub">Active Runway Ratio</span>
+            </div>
+            <div class="proc-progress-bar" style="margin-top: 8px;">
+              <div id="metric-cpu-bar" class="proc-progress-fill" style="width: 0%; background: #16a34a;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Average Waiting Time -->
+        <div class="metric-card">
+          <div class="metric-info">
+            <h4>Avg Taxiway Wait</h4>
+            <span class="metric-value" id="metric-avg-wait">0.0t</span>
+            <span class="metric-sub">Time spent in Ready</span>
+          </div>
+          <div class="metric-icon-wrap" style="background: #eff6ff; color: #2563eb;">
+            ⏱️
+          </div>
+        </div>
+
+        <!-- Average Turnaround Time -->
+        <div class="metric-card">
+          <div class="metric-info">
+            <h4>Avg Turnaround Time</h4>
+            <span class="metric-value" id="metric-avg-tat">0.0t</span>
+            <span class="metric-sub">Arrival to Departure</span>
+          </div>
+          <div class="metric-icon-wrap" style="background: #fdf2f8; color: #db2777;">
+            📊
+          </div>
+        </div>
+
+        <!-- Completed Flights -->
+        <div class="metric-card">
+          <div class="metric-info">
+            <h4>Departed Flights</h4>
+            <span class="metric-value" id="metric-completed">0 / 3</span>
+            <span class="metric-sub">Completed Takeoffs</span>
+          </div>
+          <div class="metric-icon-wrap" style="background: #f0fdf4; color: #16a34a;">
+            ✅
+          </div>
+        </div>
+
+        <!-- Context Switches -->
+        <div class="metric-card">
+          <div class="metric-info">
+            <h4>Runway Swaps (Switches)</h4>
+            <span class="metric-value" id="metric-context-switches">0</span>
+            <span class="metric-sub">Context Switches</span>
+          </div>
+          <div class="metric-icon-wrap" style="background: #f3e8ff; color: #7e22ce;">
+            🔄
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE / GANTT CHART -->
+    <section class="timeline-card">
+      <div class="ops-card-header">
+        <div class="ops-card-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" /></svg>
+          Flight Execution Timeline (Gantt Chart)
+        </div>
+        <div style="font-size: 0.78rem; color: #64748b;">
+          Green: Runway | Blue: Taxiway | Orange: Holding | Red: Departed
+        </div>
+      </div>
+      <div class="gantt-chart" id="gantt-chart">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- LIVE EVENT LOG -->
+    <section class="log-card">
+      <div class="ops-card-header">
+        <div class="ops-card-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+          Airport Traffic Control & OS Event Log
+        </div>
+        <button id="btn-clear-logs" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;">
+          Clear Logs
+        </button>
+      </div>
+      <div class="log-stream" id="event-log-stream">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL 1: Add Custom Flight -->
+  <div class="modal-overlay" id="modal-add-process">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add Custom Flight
+        </div>
+        <button class="btn btn-secondary btn-icon" id="btn-close-add-modal">&times;</button>
+      </div>
+      <form id="form-add-process">
+        <div class="modal-body">
+          <div id="add-process-error" class="form-error" style="display: none; background: #fef2f2; border: 1px solid #ef4444; padding: 8px 12px; border-radius: 6px;"></div>
+
+          <div class="form-group">
+            <label for="input-proc-pid">Flight ID (e.g. FL-104):</label>
+            <input type="text" id="input-proc-pid" class="form-control" required placeholder="e.g. FL-104">
+          </div>
+
+          <div class="form-group">
+            <label for="input-proc-name">Aircraft Model / Airline:</label>
+            <input type="text" id="input-proc-name" class="form-control" required placeholder="e.g. SkyAir 104 (Airbus A350)">
+          </div>
+
+          <div class="form-group">
+            <label for="input-proc-burst">Runway Burst Time (Ticks on Runway):</label>
+            <input type="number" id="input-proc-burst" class="form-control" min="1" max="30" value="5" required>
+            <span class="form-help">Total execution ticks required on Runway 09L to depart.</span>
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="input-has-io" style="width: 16px; height: 16px; accent-color: var(--primary);">
+              <span>Enable Weather Hold / Clearance Check (I/O event)</span>
+            </label>
+          </div>
+
+          <div id="io-optional-fields" style="display: none; background: #fff7ed; padding: 12px; border-radius: 8px; border: 1px solid #fed7aa;">
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label for="input-proc-io-req">Request Hold after how many runway ticks?</label>
+              <input type="number" id="input-proc-io-req" class="form-control" min="1" max="29" value="2">
+              <span class="form-help">Must be less than total runway burst.</span>
+            </div>
+            <div class="form-group">
+              <label for="input-proc-io-dur">Holding Duration (Ticks in Waiting Apron):</label>
+              <input type="number" id="input-proc-io-dur" class="form-control" min="1" max="15" value="3">
+              <span class="form-help">Number of ticks the aircraft remains in holding before clearance.</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-add">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Flight</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Flight Control Block (PCB) Inspector -->
+  <div class="modal-overlay" id="modal-process-detail">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="detail-proc-title">
+          Flight Control Block (PCB)
+        </div>
+        <button class="btn btn-secondary btn-icon" id="btn-close-detail">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="font-size: 0.82rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em;">Operating System Data Structure (PCB)</h4>
+        <div class="pcb-grid" id="detail-pcb-grid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <h4 style="font-size: 0.82rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-top: 10px;">State Transition Lifecycle History</h4>
+        <div class="history-timeline" id="detail-history-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.ui.hideModal(document.getElementById('modal-process-detail'))">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Educational Guide & Theory -->
+  <div class="modal-overlay" id="modal-edu">
+    <div class="modal-dialog" style="max-width: 740px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          Understand OS Process States & Airport Analogy
+        </div>
+        <button class="btn btn-secondary btn-icon" id="btn-close-edu">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="edu-accordion">
+          
+          <!-- Metaphor Overview -->
+          <div class="edu-item open">
+            <div class="edu-header">
+              <span>✈️ The Airport Traffic Control Analogy</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p>Operating System process management can be challenging to visualize. The <strong>Airport Traffic Control (ATC)</strong> analogy maps each concept directly to real-world aviation:</p>
+              <ul style="margin-left: 20px; margin-top: 6px;">
+                <li><strong>Process $\leftrightarrow$ Aircraft Flight:</strong> An active job requiring resources and CPU time.</li>
+                <li><strong>Single CPU Core $\leftrightarrow$ Active Runway 09L:</strong> Strictly single-occupancy! Only one aircraft can use the runway at a time.</li>
+                <li><strong>Short-Term Scheduler $\leftrightarrow$ ATC Tower:</strong> Decides which queued aircraft gets the runway next based on algorithm policies (FIFO, Round Robin).</li>
+                <li><strong>Preemption $\leftrightarrow$ Time Slice Go-Around:</strong> In Round Robin, if an aircraft exceeds its allotted runway slot, it is cycled back to the taxiway queue.</li>
+                <li><strong>I/O Device Wait $\leftrightarrow$ Holding Apron (Weather/Clearance):</strong> An aircraft waiting for weather clearance cannot use the runway; once cleared, it rejoins the taxiway queue.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- State 1: New -->
+          <div class="edu-item" id="edu-item-new">
+            <div class="edu-header">
+              <span>🟣 1. New State (Arrival Airspace)</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>What is the New state?</strong> A process is in the <em>New</em> state when it is being created by the Operating System (e.g. <code>fork()</code>). Memory is allocated and a Flight Control Block (PCB) is created.</p>
+              <p style="margin-top: 6px;"><strong>Transition (New → Ready):</strong> Once the OS long-term scheduler admits the flight, it moves to the <strong>Ready</strong> state on the taxiway.</p>
+            </div>
+          </div>
+
+          <!-- State 2: Ready -->
+          <div class="edu-item" id="edu-item-ready">
+            <div class="edu-header">
+              <span>🔵 2. Ready State (Taxiway Alpha Queue)</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>What is the Ready state?</strong> A process is in main memory (RAM) and has all resources except the CPU. It waits in the <strong>Ready Queue</strong> for the short-term CPU scheduler.</p>
+              <p style="margin-top: 6px;"><strong>Transition (Ready → Running):</strong> When the CPU core (runway) is idle, the scheduler dispatches the first aircraft into the <strong>Running</strong> state.</p>
+            </div>
+          </div>
+
+          <!-- State 3: Running -->
+          <div class="edu-item" id="edu-item-running">
+            <div class="edu-header">
+              <span>🟢 3. Running State (Active Runway 09L)</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>What is the Running state?</strong> The process instructions are actively executing on the CPU core. Only <em>one process</em> can occupy a single CPU core at any time.</p>
+              <p style="margin-top: 6px;"><strong>Transitions from Running:</strong></p>
+              <ul style="margin-left: 20px; margin-top: 4px;">
+                <li><strong>Running → Ready:</strong> Preemption! Time quantum expired.</li>
+                <li><strong>Running → Waiting:</strong> The process requested I/O (e.g. weather clearance).</li>
+                <li><strong>Running → Terminated:</strong> The process finished its execution bursts.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- State 4: Waiting -->
+          <div class="edu-item" id="edu-item-waiting">
+            <div class="edu-header">
+              <span>🟠 4. Waiting / Blocked State (Holding Apron)</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>What is Waiting?</strong> The process cannot execute even if the CPU is 100% idle! It is waiting for an external event (I/O completion, weather clearance).</p>
+              <p style="margin-top: 6px;"><strong>Transition (Waiting → Ready):</strong> When the event finishes, the process moves back to <strong>Ready</strong>. It does <em>not</em> jump directly to the CPU.</p>
+            </div>
+          </div>
+
+          <!-- State 5: Terminated -->
+          <div class="edu-item" id="edu-item-terminated">
+            <div class="edu-header">
+              <span>🔴 5. Terminated State (Departure Gates)</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>What is Terminated?</strong> Execution completed. The Operating System reclaims memory and removes the PCB.</p>
+            </div>
+          </div>
+
+          <!-- Ready vs Waiting -->
+          <div class="edu-item">
+            <div class="edu-header">
+              <span>⚖️ Ready vs. Waiting: The Key Difference</span>
+              <span class="edu-icon">▼</span>
+            </div>
+            <div class="edu-body">
+              <p><strong>Ready:</strong> The process is capable of running immediately if given the CPU. It only lacks CPU time.</p>
+              <p style="margin-top: 6px;"><strong>Waiting (Blocked):</strong> The process <em>cannot</em> run even if the CPU is idle, because it is waiting for an external event or I/O device.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="app.ui.hideModal(document.getElementById('modal-edu'))">Got It!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Presentation Script (Speaking Notes) -->
+  <div class="modal-overlay" id="modal-script">
+    <div class="modal-dialog" style="max-width: 740px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          Airport Traffic Control Presentation Script (2–3 Minutes)
+        </div>
+        <button class="btn btn-secondary btn-icon" id="btn-close-script">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Script Section 1 -->
+        <div class="script-card">
+          <div class="script-time">Part 1: Introduction (30 seconds)</div>
+          <div class="script-speech">
+            "Respected Professor and peers, today I am presenting the <strong>Airport Traffic Control OS Process State Simulator</strong>. 
+            In multiprogramming operating systems, processes dynamically transition through five fundamental states: <strong>New, Ready, Running, Waiting,</strong> and <strong>Terminated</strong>.
+            To make these abstract concepts intuitive, our project introduces an interactive <strong>Airport Traffic Control</strong> metaphor where aircraft represent processes, the active runway represents the single CPU core, and the ATC Tower represents the OS scheduler."
+          </div>
+          <div class="script-actions">
+            👉 <em>Action: Point to the Airport Scene, Runway 09L, and the 5-state process diagram.</em>
+          </div>
+        </div>
+
+        <!-- Script Section 2 -->
+        <div class="script-card">
+          <div class="script-time">Part 2: Live Demonstration (90 seconds)</div>
+          <div class="script-speech">
+            "Let's observe our live demonstration with three flights under <strong>Round Robin CPU scheduling</strong> ($q=2$ ticks):
+            <br><br>
+            • At <strong>Tick 0</strong>, FL-101, FL-102, and FL-103 enter the airport airspace and taxi into the <em>Ready Queue</em>.
+            <br>• The ATC Tower dispatches <strong>FL-101</strong> onto <strong>Runway 09L</strong> (<em>Ready → Running</em>).
+            <br>• After 2 ticks of runway acceleration, FL-101 encounters a weather check hold. It moves from <em>Running → Waiting</em>, immediately freeing the runway!
+            <br>• The scheduler dispatches <strong>FL-102</strong>. When its 2-tick quantum expires, the OS preempts FL-102 back to the taxiway queue (<em>Running → Ready</em>).
+            <br>• As FL-101's weather clearance completes, notice that it transitions from <em>Waiting → Ready</em> to rejoin the queue fairly.
+            <br>• Finally, as flights complete their full burst, they take off into the <em>Terminated</em> departure corridor."
+          </div>
+          <div class="script-actions">
+            👉 <em>Action: Click "Step" tick by tick or use the Manual ATC Dispatcher controls to demonstrate valid transitions.</em>
+          </div>
+        </div>
+
+        <!-- Script Section 3 -->
+        <div class="script-card">
+          <div class="script-time">Part 3: Key Takeaway & Conclusion (30 seconds)</div>
+          <div class="script-speech">
+            "This simulation proves how the Operating System enforces <strong>mutual exclusion</strong> on the CPU, balances responsiveness through <strong>Round Robin time-slicing</strong>, and distinguishes between processes that are <strong>Ready</strong> versus <strong>Blocked in I/O</strong>. Thank you!"
+          </div>
+          <div class="script-actions">
+            👉 <em>Action: Show the live Statistics Dashboard and Gantt Chart.</em>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="app.ui.hideModal(document.getElementById('modal-script'))">Close Script</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/state-machine.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/diagram.js"></script>
+  <script src="js/airport-scene.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
